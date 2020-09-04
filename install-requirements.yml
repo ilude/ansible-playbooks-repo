@@ -1,0 +1,20 @@
+
+- hosts: localhost
+  tasks:
+    - name: Install roles from Ansible Galaxy
+      command: ansible-galaxy install {{ item.item }}
+      with_items:
+        - geerlingguy.pip
+        - geerlingguy.docker
+
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  vars:
+    pip_install_packages:
+      - name: docker
+      - name: docker-compose
+      - name: netaddr
+
+  roles:
+    - geerlingguy.pip

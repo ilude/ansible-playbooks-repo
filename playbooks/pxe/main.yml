@@ -1,0 +1,5 @@
+- name: include pxe dnsmasq playbook
+  import_playbook: dnsmasq.yml
+
+- name: include pxe ufw playbook
+  import_playbook: ufw.yml

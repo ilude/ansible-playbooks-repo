@@ -1,0 +1,5 @@
+default install
+label install
+kernel ubuntu-installer/amd64/linux
+append vga=788 initrd=ubuntu-installer/amd64/initrd.gz auto=true priority=critical preseed/url=tftp://{{ ansible_eth1.ipv4.address }}/preseed.cfg
+EOF

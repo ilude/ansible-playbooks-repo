@@ -1,0 +1,30 @@
+- name: setup ufw rules for development containers
+  hosts: all
+  gather_facts: no
+  remote_user: mike
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: open ufw udf ports
+      ufw:
+        rule: allow
+        interface: eth0
+        direction: in
+        proto: udp
+        port: "{{ item }}"
+      loop:
+        - '137'
+        - '138'
+
+    - name: open ufw tcp ports
+      ufw:
+        rule: allow
+        interface: eth0
+        direction: in
+        proto: tcp
+        port: "{{ item }}"
+      loop:
+        - '139'
+        - '445'
+        - '8443'

@@ -1,0 +1,49 @@
+- name: Include a play ufw playbook
+  import_playbook: ufw.yml
+
+- name: setup development environment
+  hosts: all
+  remote_user: mike
+  become: yes
+  become_method: sudo
+  tasks:
+  - name: Generate random password for code_server 
+    set_fact: 
+      generated_pass: "{{ lookup('password', '/tmp/code_serv_pass chars=ascii_letters,digits,hexdigits,punctuation') }}"
+
+  - name: Creates directory
+    file:
+      path: /apps/development
+      state: directory
+    
+  - name: Create development docker-compose.yml
+    template:
+      src: docker-compose.yml.j2
+      dest: /apps/development/docker-compose.yml
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: 0644
+
+  - name: Create development Makefile
+    template:
+      src: Makefile.j2
+      dest: /apps/development/Makefile
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: 0644
+
+  - name: Output development password
+    debug:
+      var: generated_pass
+
+  - name: Create and start development services
+    docker_compose:
+      project_src: /apps/development
+      state: present 
+      restarted: yes
+    register: output
+
+  # - debug:
+  #     var: output
+
+  

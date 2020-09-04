@@ -1,0 +1,5 @@
+# ignore this directory it will be present in ansible-control
+.devcontainer
+
+.env
+/roles

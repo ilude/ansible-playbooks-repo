@@ -1,0 +1,41 @@
+- hosts: pxe
+  become: yes
+  become_method: sudo  
+  tasks:
+    - name: stop service systemd-resolved, if running
+      systemd:
+        name: systemd-resolved
+        state: stopped
+        enabled: no
+        daemon_reload: yes
+
+    - stat:
+        path: /etc/resolv.conf
+      register: resolv
+
+    - name: Remove symlink
+      when: resolv.stat.islnk is defined and resolv.stat.islnk
+      file:
+        path: /etc/resolv.conf
+        state: absent
+
+    - name: ensure file exists
+      copy:
+        content: "nameserver 9.9.9.9"
+        dest: /etc/resolv.conf
+        force: no
+        group: root
+        owner: root
+        mode: 0555
+
+    - name: "Install dnsmasq"
+      apt:
+        pkg:
+          - dnsmasq
+          - ufw
+        state: present
+
+    - set_fact:
+        eth1_mask: "{{ (ansible_eth1.ipv4.address + '/' + ansible_eth1.ipv4.netmask) | ipaddr('prefix') }}"
+    - set_fact:
+        eth1_cidr: "{{ ansible_eth1.ipv4.network }}/{{ eth1_mask }}"

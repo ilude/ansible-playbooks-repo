@@ -1,0 +1,63 @@
+- hosts: pxe
+  become: yes
+  become_method: sudo  
+  tasks:
+    - name: Configuration IP forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+
+    - name: Add ufw before content
+      blockinfile:
+        path: /etc/ufw/before.rules
+        insertbefore: BOF
+        content: |
+          # NAT table rules
+          *nat
+          :POSTROUTING ACCEPT [0:0]
+          -A POSTROUTING -s {{ eth1_cidr }} -o eth0 -j MASQUERADE
+          COMMIT
+
+    - name: Customize ufw forwarding policy
+      lineinfile:
+        line: "DEFAULT_FORWARD_POLICY=\"ACCEPT\""
+        path: "/etc/default/ufw"
+        regexp: "^DEFAULT_FORWARD_POLICY=\"DROP\""
+
+    - name: Open ufw ports for ssh
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: open ufw ports for dns
+      ufw:
+        rule: allow
+        interface: eth1
+        direction: in
+        port: '53'
+
+    - name: open ufw udf ports
+      ufw:
+        rule: allow
+        interface: eth1
+        direction: in
+        proto: udp
+        port: "{{ item }}"
+      loop:
+        - '67'
+        - '69'
+
+    - name: open ufw ports for http
+      ufw:
+        rule: allow
+        interface: eth1
+        direction: in
+        proto: tcp
+        port: '80'
+
+
+    - name: enable ufw
+      ufw:
+        state: enabled
+        logging: 'on'
