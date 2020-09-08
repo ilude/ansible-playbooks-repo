@@ -4,4 +4,4 @@ all:
   children:
     pxe:
       hosts:
-        192.168.16.221
+        localhost
