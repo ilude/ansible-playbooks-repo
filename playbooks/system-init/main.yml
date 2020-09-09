@@ -19,8 +19,9 @@
         mode: 0755
 
     - name: Disable motd spam
-      shell: sed -i 's/^ENABLED=.*/ENABLED=0/' /etc/default/motd-news
-      warn: false
+      shell: 
+        cmd: sed -i 's/^ENABLED=.*/ENABLED=0/' /etc/default/motd-news
+        warn: false
 
     - name: Disable motd adware
       file:
