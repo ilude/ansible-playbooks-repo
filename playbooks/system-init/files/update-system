@@ -1,0 +1,13 @@
+#!/bin/bash
+/usr/bin/dpkg --configure -a
+/usr/bin/apt-get update
+/usr/bin/apt-get -qy dist-upgrade
+/usr/bin/apt-get install -f
+/usr/bin/apt-get clean
+/usr/bin/apt-get -qy autoremove
+if [ -f /var/run/reboot-required ]; then
+    sudo reboot
+else
+    dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get -y purge
+    exit 0
+fi

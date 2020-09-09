@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  roles:
+    - geerlingguy.git 
+
+- hosts: all
+  become: yes
+  become_method: sudo
+  tasks:
+
+    - name: Install git-prompt.sh
+      copy:
+        src: git-prompt.sh
+        dest: /etc/profile.d/git-prompt.sh
+        mode: 0755
+
+    - name: Create .gitconfig
+      template:
+        src: gitconfig.j2
+        dest: ~/.gitconfig
+        mode: 0644
+      become: false

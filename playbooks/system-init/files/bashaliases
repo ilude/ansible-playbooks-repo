@@ -1,0 +1,2 @@
+alias dc=docker-compose
+alias l='ls --color -lha --group-directories-first'

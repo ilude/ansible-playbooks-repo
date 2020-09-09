@@ -1,0 +1,40 @@
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Remove Snap packages
+      shell: |
+        snap list --all | awk '/disabled/{print $1, $3}' |
+        while read snapname revision; do
+          snap remove "$snapname" --revision="$revision"
+        done
+
+    - name: Remove Snap mounts
+      shell: |
+        for f in $(df | awk "{ print \$6 }" | grep snap); do
+          umount "$f"
+        done
+
+    - name: Remove snapd package
+      apt:
+        name: snapd
+        purge: yes
+        state: absent
+
+    - name: Remove Snap home directory
+      file:
+        path: ~/snap/
+        force: yes
+        state: absent
+      become: false
+
+    - name: Remove Snap directories
+      file:
+        path: "{{ item }}"
+        force: yes
+        state: absent
+      with_items:
+        - "/snap/"
+        - "/var/snap/"
+        - "/var/lib/snapd/"

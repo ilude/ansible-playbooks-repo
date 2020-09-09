@@ -8,6 +8,9 @@
 - name: include docker playbook
   import_playbook: playbooks/docker/main.yml
 
+- name: include docker playbook
+  import_playbook: playbooks/git/main.yml
+
 - name: Include developement server playbooks
   import_playbook: playbooks/development/main.yml
 

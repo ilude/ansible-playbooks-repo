@@ -35,7 +35,4 @@
           - ufw
         state: present
 
-    - set_fact:
-        eth1_mask: "{{ (ansible_eth1.ipv4.address + '/' + ansible_eth1.ipv4.netmask) | ipaddr('prefix') }}"
-    - set_fact:
-        eth1_cidr: "{{ ansible_eth1.ipv4.network }}/{{ eth1_mask }}"
+    

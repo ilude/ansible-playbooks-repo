@@ -4,13 +4,13 @@ PWD = $(shell pwd)
 ANSIBLE_CONFIG  = $(PWD)/config/ansible.cfg
 export ANSIBLE_CONFIG
 
-
 run: setup
 	ansible-playbook main.yml
 
 setup: $(SUDOERS) apt-upgrade install-pip3 install-ansible
+	@echo Loading config $(ANSIBLE_CONFIG)
 	ansible-playbook install-requirements.yml
-
+	
 $(SUDOERS):
 	echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee --append $(SUDOERS)
 

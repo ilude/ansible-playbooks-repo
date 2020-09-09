@@ -1,3 +1,9 @@
+- name: include snap playbook
+  import_playbook: snap.yml
+
+- name: include aliases playbook
+  import_playbook: aliases.yml
+
 - hosts: all
   become: yes
   become_method: sudo
@@ -5,3 +11,28 @@
   tasks:
     - name: Update packages
       apt: update_cache=yes upgrade=dist
+
+    - name: Setup update-system cronjob
+      copy:
+        src: update-system
+        dest: /etc/cron.weekly/update-system
+        mode: 0755
+
+    - name: Disable motd spam
+      shell: sed -i 's/^ENABLED=.*/ENABLED=0/' /etc/default/motd-news
+      warn: false
+
+    - name: Disable motd adware
+      file:
+        path: /etc/update-motd.d/{{ item }}
+        state: touch
+        mode: -x
+      with_items:
+        - 50-motd-news
+        - 80-livepatch
+        - 10-help-text
+
+    - name: Cleanup
+      apt:
+        autoremove: yes
+        purge: yes

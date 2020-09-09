@@ -1,0 +1,8 @@
+- hosts: all
+  tasks:
+
+    - name: Copy .bash_aliases
+      copy:
+        src: bashaliases
+        dest: ~/.bashaliases
+        mode: 0600

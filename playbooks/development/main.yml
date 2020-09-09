@@ -3,34 +3,71 @@
 
 - name: setup development environment
   hosts: all
-  remote_user: mike
-  become: yes
-  become_method: sudo
   tasks:
   - name: Generate random password for code_server 
     set_fact: 
-      generated_pass: "{{ lookup('password', '/tmp/code_serv_pass chars=ascii_letters,digits,hexdigits,punctuation') }}"
+      generated_pass: "{{ lookup('password', '.dev_pass chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
+  - name: Get username for current user
+    command: whoami
+    changed_when: false
+    become: false
+    register: id
+
+  - name: Set a fact with the username.
+    set_fact:
+      current_user: "{{ id.stdout }}"  
+
+  - name: Get uid for current user
+    command: id -u
+    changed_when: false
+    become: false
+    register: puid
+
+  - name: Set a fact with the user uid.
+    set_fact:
+      current_puid: "{{ puid.stdout }}"
+
+  - name: Get gid for current user
+    command: id -g
+    changed_when: false
+    become: false
+    register: pgid
+
+  - name: Set a fact with the user uid.
+    set_fact:
+      current_pgid: "{{ pgid.stdout }}"
+  
   - name: Creates directory
     file:
       path: /apps/development
       state: directory
+      owner: "{{ current_user }}"
+      group: "{{ current_user }}"
     
   - name: Create development docker-compose.yml
     template:
       src: docker-compose.yml.j2
       dest: /apps/development/docker-compose.yml
-      owner: "{{ ansible_user }}"
-      group: "{{ ansible_user }}"
-      mode: 0644
+      owner: "{{ current_user }}"
+      group: "{{ current_user }}"
+      mode: 0664
 
   - name: Create development Makefile
     template:
       src: Makefile.j2
       dest: /apps/development/Makefile
-      owner: "{{ ansible_user }}"
-      group: "{{ ansible_user }}"
-      mode: 0644
+      owner: "{{ current_user }}"
+      group: "{{ current_user }}"
+      mode: 0664
+
+  - name: Create development .env
+    template:
+      src: env.j2
+      dest: /apps/development/.env
+      owner: "{{ current_user }}"
+      group: "{{ current_user }}"
+      mode: 0664
 
   - name: Output development password
     debug:

@@ -1,7 +1,6 @@
 - name: setup ufw rules for development containers
   hosts: all
   gather_facts: no
-  remote_user: mike
   become: yes
   become_method: sudo
   

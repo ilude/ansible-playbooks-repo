@@ -17,5 +17,13 @@
   roles:
     - geerlingguy.docker 
     
-  
+- hosts: all
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Setup docker-prune cronjob
+      copy:
+        src: docker-prune
+        dest: /etc/cron.weekly/docker-prune
+        mode: 0755
   
