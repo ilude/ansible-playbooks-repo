@@ -1,6 +1,7 @@
 - hosts: pxe
   become: yes
   become_method: sudo  
+
   tasks:
     - name: stop service systemd-resolved, if running
       systemd:
@@ -36,6 +37,11 @@
           - net-tools
           - tftp
         state: present
+
+    - set_fact:
+        mask_cidr: "{{ ip | ipaddr('network/prefix') }}"
+      vars:
+        ip: "{{ ansible_eth1.ipv4.address }}/{{ ansible_eth1.ipv4.netmask }}"
 
     - name: Copy dnsmasq config
       template:
