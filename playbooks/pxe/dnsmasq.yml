@@ -68,6 +68,7 @@
         dest: /apps/tftp/
         mode: '0644'
         remote_src: yes
+        creates: /apps/tftp/pxelinux.cfg/
 
     - name: Copy pxelinux.cfg
       template:
@@ -80,8 +81,9 @@
     - name: Download ubuntu 20.04 server iso
       get_url:
         url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
-        dest: /apps/tftp/
+        dest: /apps/tftp/ubuntu-20.04.1-live-server-amd64.iso
         mode: '0440'
+       
 
     - name: Start dnsmasq
       systemd:

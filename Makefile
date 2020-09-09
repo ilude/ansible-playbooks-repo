@@ -9,7 +9,7 @@ run: setup
 
 setup: $(SUDOERS) apt-upgrade install-pip3 install-ansible
 	@echo Loading config $(ANSIBLE_CONFIG)
-	ansible-playbook -v install-requirements.yml
+	ansible-playbook install-requirements.yml
 
 $(SUDOERS):
 	echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee --append $(SUDOERS)

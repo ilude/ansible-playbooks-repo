@@ -6,7 +6,7 @@
   tasks:
   - name: Generate random password for code_server 
     set_fact: 
-      generated_pass: "{{ lookup('password', '.dev_pass chars=ascii_letters,digits,hexdigits,punctuation') }}"
+      generated_pass: "{{ lookup('password', '../../config/.dev_pass chars=ascii_letters,digits,hexdigits,punctuation') }}"
 
   - name: Get username for current user
     command: whoami
