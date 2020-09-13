@@ -37,3 +37,10 @@
       apt:
         autoremove: yes
         purge: yes
+
+#  Disable IPv6
+- hosts: all
+  become: yes
+  become_method: sudo
+  roles:
+    - juju4.ipv6

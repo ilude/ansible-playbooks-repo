@@ -10,6 +10,7 @@
         - geerlingguy.pip
         - geerlingguy.docker
         - geerlingguy.git
+        - juju4.ipv6
 
 - hosts: localhost
   become: yes
@@ -20,6 +21,7 @@
       - name: docker
       - name: docker-compose
       - name: netaddr
+      - name: passlib 
 
   tasks:
     - name: Install pip role

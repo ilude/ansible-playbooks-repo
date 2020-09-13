@@ -1,0 +1,15 @@
+version: "2.4"
+services:
+  nginx:
+    image: linuxserver/nginx
+    container_name: nginx
+    restart: unless-stopped
+    environment:
+      - PUID={{ current_puid }}
+      - PGID={{ current_pgid }}
+      - TZ=US/Eastern
+    volumes:
+      - /apps/pxe:/config
+    ports:
+      - {{ ansible_eth1.ipv4.address }}:80:80
+    

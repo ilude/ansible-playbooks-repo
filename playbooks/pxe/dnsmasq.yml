@@ -14,13 +14,13 @@
         path: /etc/resolv.conf
       register: resolv
 
-    - name: Remove symlink
+    - name: Remove symlink for /etc/resolv.conf
       when: resolv.stat.islnk is defined and resolv.stat.islnk
       file:
         path: /etc/resolv.conf
         state: absent
 
-    - name: ensure file exists
+    - name: ensure file new /etc/resolv.conf exists
       copy:
         content: "nameserver 9.9.9.9"
         dest: /etc/resolv.conf
@@ -29,7 +29,7 @@
         owner: root
         mode: 0755
 
-    - name: "Install packages and dependences"
+    - name: "Install dnsmasq/pxe packages and dependences"
       apt:
         pkg:
           - dnsmasq
@@ -61,25 +61,26 @@
       set_fact:
         current_user: "{{ id.stdout }}"  
 
-    - name: Create /apps/tftp
+    - name: Create /apps/pxe/www/tftp
       file:
-        path: /apps/tftp
+        path: /apps/pxe/www/tftp
         state: directory
         owner: "{{ current_user }}"
         group: "{{ current_user }}"
+        mode: 0755
 
     - name: Download and unpack netboot.tar.gz
       unarchive:
         src: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/netboot.tar.gz
-        dest: /apps/tftp/
-        mode: '0644'
+        dest: /apps/pxe/www/tftp
+        mode: '0755'
         remote_src: yes
-        creates: /apps/tftp/pxelinux.cfg/
+        creates: /apps/pxe/www/tftp/pxelinux.cfg/
 
     - name: Copy pxelinux.cfg
       template:
         src: pxelinux.cfg.default.j2
-        dest: /apps/tftp/pxelinux.cfg/default
+        dest: /apps/pxe/www/tftp/pxelinux.cfg/default
         group: root
         owner: root
         mode: 0755
@@ -87,7 +88,7 @@
     - name: Download ubuntu 20.04 server iso
       get_url:
         url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
-        dest: /apps/tftp/ubuntu-20.04.1-live-server-amd64.iso
+        dest: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
         mode: '0440'
        
 

@@ -1,13 +1,5 @@
-- name: Include a play ufw playbook
-  import_playbook: ufw.yml
-
-- name: setup development environment
-  hosts: all
+- hosts: pxe
   tasks:
-  - name: Generate random password for code_server 
-    set_fact: 
-      generated_pass: "{{ lookup('password', '../../config/.dev_pass chars=ascii_letters,digits,hexdigits,punctuation') }}"
-
   - name: Get username for current user
     command: whoami
     changed_when: false
@@ -37,42 +29,51 @@
   - name: Set a fact with the user uid.
     set_fact:
       current_pgid: "{{ pgid.stdout }}"
-  
-  - name: Creates development directory
+
+  - name: Generate random password for code_server 
+    set_fact: 
+      generated_pass: "{{lookup('password', '../../config/.dev_pass encrypt=sha512_crypt chars=ascii_letters,digits,hexdigits,punctuation')}}"
+      
+  - name: Creates pxe directory
     file:
-      path: /apps/development
+      path: /apps/pxe/www/tftp
       state: directory
       owner: "{{ current_user }}"
       group: "{{ current_user }}"
     
-  - name: Create development docker-compose.yml
+  - name: Create pxe docker-compose.yml
     template:
       src: docker-compose.yml.j2
-      dest: /apps/development/docker-compose.yml
+      dest: /apps/pxe/docker-compose.yml
       owner: "{{ current_user }}"
       group: "{{ current_user }}"
       mode: 0664
 
-  - name: Create development Makefile
+  - name: Create pxe Makefile
     template:
       src: Makefile.j2
-      dest: /apps/development/Makefile
+      dest: /apps/pxe/Makefile
       owner: "{{ current_user }}"
       group: "{{ current_user }}"
       mode: 0664
 
-  - name: Output development password
-    debug:
-      var: generated_pass
+  - name: Add a line to a file if the file does not exist, without passing regexp
+    lineinfile:
+      path: /apps/pxe/www/tftp/meta-data
+      line: "instance-id: focal-autoinstall"
+      create: yes
+
+  - name: Create pxe cloud-init file
+    template:
+      src: cloud-init.j2
+      dest: /apps/pxe/www/tftp/user-data
+      owner: "{{ current_user }}"
+      group: "{{ current_user }}"
+      mode: 0664
 
   - name: Create and start development services
     docker_compose:
-      project_src: /apps/development
+      project_src: /apps/pxe
       state: present 
       restarted: yes
     register: output
-
-  # - debug:
-  #     var: output
-
-  
