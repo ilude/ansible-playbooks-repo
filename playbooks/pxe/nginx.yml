@@ -1,4 +1,6 @@
 - hosts: pxe
+  become: yes
+  become_method: sudo
   tasks:
   - name: Get username for current user
     command: whoami
@@ -61,6 +63,9 @@
     lineinfile:
       path: /apps/pxe/www/tftp/meta-data
       line: "instance-id: focal-autoinstall"
+      owner: "{{ current_user }}"
+      group: "{{ current_user }}"
+      mode: 0664
       create: yes
 
   - name: Create pxe cloud-init file
@@ -77,3 +82,4 @@
       state: present 
       restarted: yes
     register: output
+    become: false
