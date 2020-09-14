@@ -2,3 +2,27 @@ default install
 label install
 kernel ubuntu-installer/amd64/linux
 append vga=788 initrd=ubuntu-installer/amd64/initrd.gz auto=true priority=critical root=/dev/ram0 ramdisk_size=1500000 ip=dhcp autoinstall ds=nocloud-net;s=http://{{ ansible_eth1.ipv4.address }}/tftp/
+
+
+
+DEFAULT vesamenu.c32
+TIMEOUT 3
+ONTIMEOUT focal-live-install-autoinstall
+PROMPT 0
+
+NOESCAPE 1
+
+LABEL focal-live-install
+        MENU DEFAULT
+        MENU label Install focal
+        KERNEL vmlinuz
+        INITRD initrd
+        APPEND root=/dev/ram0 ramdisk_size=1500000 ip=dhcp url=http://10.172.0.1/tftp/ubuntu-20.04.1-live-server-amd64.iso
+
+LABEL focal-live-install-autoinstall
+        MENU DEFAULT
+        MENU label Install focal - autoinstall
+        KERNEL vmlinuz
+        INITRD initrd
+        APPEND root=/dev/ram0 ramdisk_size=900000 ip=dhcp url=http://10.172.0.1/tftp/ubuntu-20.04.1-live-server-amd64.iso autoinstall ds=nocloud-net;s=http://10.172.0.1/tftp/cloud-init-bios/
+

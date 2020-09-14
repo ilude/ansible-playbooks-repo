@@ -21,8 +21,7 @@ autoinstall:
     install-server: true
   storage:
     config:
-    - {ptable: gpt, serial: 36002248057594609b9e3b3a15a98b3d9, wwn: '0x6002248057594609b9e3b3a15a98b3d9',
-      path: /dev/sda, wipe: superblock, preserve: false, name: '', grub_device: false,
+    - {ptable: gpt, path: /dev/sda, wipe: superblock, preserve: false, name: '', grub_device: false,
       type: disk, id: disk-sda}
     - {device: disk-sda, size: 536870912, wipe: superblock, flag: boot, number: 1,
       preserve: false, grub_device: true, type: partition, id: partition-0}

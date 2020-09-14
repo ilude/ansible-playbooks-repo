@@ -35,10 +35,41 @@
   - name: Generate random password for code_server 
     set_fact: 
       generated_pass: "{{lookup('password', '../../config/.dev_pass encrypt=sha512_crypt chars=ascii_letters,digits,hexdigits,punctuation')}}"
+
+  - name: Stop docker-compose services
+    docker_compose:
+      project_src: /apps/pxe
+      build: no
+      stopped: yes
+    become: false
+    register: output
+
+  # - name: Stop dcocker-compose services
+  #   debug:
+  #     var: output
+
+  # collect stats about the dir
+  - name: check directory exists
+    stat:
+      path: /apps/pxe/log
+    register: dir_to_delete
+
+  # delete directory if condition is true
+  - name: Cleanup /apps/pxe directory
+    file:
+      state: absent
+      path: /apps/pxe
+    when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
       
-  - name: Creates pxe directory
+  - name: Creates tftp/nginx root directory
     file:
       path: /apps/pxe/www/tftp
+      state: directory
+    become: false
+  
+  - name: Creates nginx-config directory
+    file:
+      path: /apps/pxe/nginx-config
       state: directory
       owner: "{{ current_user }}"
       group: "{{ current_user }}"

@@ -9,7 +9,8 @@ services:
       - PGID={{ current_pgid }}
       - TZ=US/Eastern
     volumes:
-      - /apps/pxe:/config
+      - /apps/pxe/nginx-config:/config
+      - /apps/pxe/www:/config/www
     ports:
       - {{ ansible_eth1.ipv4.address }}:80:80
     

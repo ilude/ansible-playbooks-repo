@@ -65,9 +65,8 @@
       file:
         path: /apps/pxe/www/tftp
         state: directory
-        owner: "{{ current_user }}"
-        group: "{{ current_user }}"
         mode: 0755
+      become: false
 
     - name: Download and unpack netboot.tar.gz
       unarchive:
@@ -75,27 +74,27 @@
         dest: /apps/pxe/www/tftp
         mode: '0755'
         remote_src: yes
-        creates: /apps/pxe/www/tftp/pxelinux.cfg/
+        creates: /apps/pxe/www/tftp/pxelinux.cfg/ 
+      become: false
 
     - name: Copy pxelinux.cfg
       template:
         src: pxelinux.cfg.default.j2
         dest: /apps/pxe/www/tftp/pxelinux.cfg/default
-        group: root
-        owner: root
         mode: 0755
+      become: false
 
     - name: Download ubuntu 20.04 server iso
       get_url:
         url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
         dest: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
         mode: '0440'
+      become: false
        
-
     - name: Start dnsmasq
       systemd:
         name: dnsmasq
-        state: started
+        state: restarted
         enabled: yes
         daemon_reload: yes
 

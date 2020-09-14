@@ -1,8 +1,8 @@
-- name: include pxe dnsmasq playbook
-  import_playbook: dnsmasq.yml
-
 - name: include nginx docker playbook
   import_playbook: nginx.yml
+
+- name: include pxe dnsmasq playbook
+  import_playbook: dnsmasq.yml
 
 # - name: include pxe ufw playbook
 #   import_playbook: ufw.yml
