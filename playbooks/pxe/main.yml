@@ -4,5 +4,13 @@
 - name: include nginx docker playbook
   import_playbook: nginx.yml
 
-- name: include pxe ufw playbook
-  import_playbook: ufw.yml
+# - name: include pxe ufw playbook
+#   import_playbook: ufw.yml
+
+- hosts: localhost
+  become: true
+  tasks:
+  - name: disable ufw
+    ufw:
+      state: disabled
+  

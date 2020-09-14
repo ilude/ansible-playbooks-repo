@@ -1,5 +1,4 @@
 default install
 label install
 kernel ubuntu-installer/amd64/linux
-APPEND root=/dev/ram0 ramdisk_size=1500000 ip=dhcp url=http://{{ ansible_eth1.ipv4.address }}/tftp/ubuntu-20.04-live-server-amd64.iso autoinstall ds=nocloud-net;s=http://{{ ansible_eth1.ipv4.address }}/tftp/
-EOF
+append vga=788 initrd=ubuntu-installer/amd64/initrd.gz auto=true priority=critical root=/dev/ram0 ramdisk_size=1500000 ip=dhcp autoinstall ds=nocloud-net;s=http://{{ ansible_eth1.ipv4.address }}/tftp/

@@ -35,19 +35,19 @@
         rule: allow
         name: OpenSSH
 
-    - name: open ufw ports for dns
+    - name: open ufw ports 53 for dns
       ufw:
         rule: allow
         interface: eth1
         direction: in
         port: '53'
 
-    - name: open ufw udf ports
+    - name: open ufw port {{ item }}
       ufw:
         rule: allow
         interface: eth1
         direction: in
-        proto: udp
+        proto: any
         port: "{{ item }}"
       loop:
         - '67'
