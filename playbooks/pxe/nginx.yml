@@ -1,110 +1,55 @@
 - hosts: pxe
-  become: yes
-  become_method: sudo
   tasks:
-  - name: Get username for current user
-    command: whoami
-    changed_when: false
-    become: false
-    register: id
-
-  - name: Set a fact with the username.
-    set_fact:
-      current_user: "{{ id.stdout }}"  
-
-  - name: Get uid for current user
-    command: id -u
-    changed_when: false
-    become: false
-    register: puid
-
-  - name: Set a fact with the user uid.
-    set_fact:
-      current_puid: "{{ puid.stdout }}"
-
-  - name: Get gid for current user
-    command: id -g
-    changed_when: false
-    become: false
-    register: pgid
-
-  - name: Set a fact with the user uid.
-    set_fact:
-      current_pgid: "{{ pgid.stdout }}"
-
   - name: Generate random password for code_server 
     set_fact: 
       generated_pass: "{{lookup('password', '../../config/.dev_pass encrypt=sha512_crypt chars=ascii_letters,digits,hexdigits,punctuation')}}"
 
-  - name: Stop docker-compose services
-    docker_compose:
-      project_src: /apps/pxe
-      build: no
-      stopped: yes
-    become: false
-    register: output
+  - name: check directory exists
+    stat:
+      path: /apps/pxe
+    register: dir_to_delete
+
+
+  # - name: Stop docker-compose services
+  #   docker_compose:
+  #     project_src: /apps/pxe
+  #     build: no
+  #     stopped: yes
+  #   become: false
+  #   register: output
+  #   when: "web.flask_web_1.state.running"
 
   # - name: Stop dcocker-compose services
   #   debug:
   #     var: output
 
   # collect stats about the dir
-  - name: check directory exists
-    stat:
-      path: /apps/pxe/log
-    register: dir_to_delete
-
-  # delete directory if condition is true
-  - name: Cleanup /apps/pxe directory
-    file:
-      state: absent
-      path: /apps/pxe
-    when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
-      
-  - name: Creates tftp/nginx root directory
-    file:
-      path: /apps/pxe/www/tftp
-      state: directory
-    become: false
   
   - name: Creates nginx-config directory
     file:
       path: /apps/pxe/nginx-config
       state: directory
-      owner: "{{ current_user }}"
-      group: "{{ current_user }}"
+
+  - name: current local user id
+    set_fact:
+      current_puid: "{{ lookup('pipe', 'id -u') }}"
+    failed_when: current_puid == ''
+
+  - name: current local group id
+    set_fact:
+      current_pgid: "{{ lookup('pipe', 'id -g') }}"
+    failed_when: current_pgid == ''
     
   - name: Create pxe docker-compose.yml
     template:
       src: docker-compose.yml.j2
       dest: /apps/pxe/docker-compose.yml
-      owner: "{{ current_user }}"
-      group: "{{ current_user }}"
       mode: 0664
 
   - name: Create pxe Makefile
     template:
       src: Makefile.j2
       dest: /apps/pxe/Makefile
-      owner: "{{ current_user }}"
-      group: "{{ current_user }}"
-      mode: 0664
-
-  - name: Add a line to a file if the file does not exist, without passing regexp
-    lineinfile:
-      path: /apps/pxe/www/tftp/meta-data
-      line: "instance-id: focal-autoinstall"
-      owner: "{{ current_user }}"
-      group: "{{ current_user }}"
-      mode: 0664
-      create: yes
-
-  - name: Create pxe cloud-init file
-    template:
-      src: cloud-init.j2
-      dest: /apps/pxe/www/tftp/user-data
-      owner: "{{ current_user }}"
-      group: "{{ current_user }}"
       mode: 0664
 
   - name: Create and start development services

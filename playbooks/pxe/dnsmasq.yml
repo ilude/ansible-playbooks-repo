@@ -36,6 +36,9 @@
           - ufw
           - net-tools
           - tftp
+          - pxelinux
+          - syslinux
+          - p7zip-full
         state: present
 
     - set_fact:
@@ -61,35 +64,7 @@
       set_fact:
         current_user: "{{ id.stdout }}"  
 
-    - name: Create /apps/pxe/www/tftp
-      file:
-        path: /apps/pxe/www/tftp
-        state: directory
-        mode: 0755
-      become: false
-
-    - name: Download and unpack netboot.tar.gz
-      unarchive:
-        src: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/netboot.tar.gz
-        dest: /apps/pxe/www/tftp
-        mode: '0755'
-        remote_src: yes
-        creates: /apps/pxe/www/tftp/pxelinux.cfg/ 
-      become: false
-
-    - name: Copy pxelinux.cfg
-      template:
-        src: pxelinux.cfg.default.j2
-        dest: /apps/pxe/www/tftp/pxelinux.cfg/default
-        mode: 0755
-      become: false
-
-    - name: Download ubuntu 20.04 server iso
-      get_url:
-        url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
-        dest: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
-        mode: '0440'
-      become: false
+    
        
     - name: Start dnsmasq
       systemd:

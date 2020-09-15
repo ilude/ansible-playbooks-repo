@@ -13,31 +13,7 @@ autoinstall ds=nocloud-net;s=http://{{ ansible_eth1.ipv4.address }}/tftp/
 cp /usr/lib/PXELINUX/pxelinux.0 /apps/pxe/www/tftp/pxelinux.0.bios
 cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp/
 
-MYIP=$(hostname --ip-address)
-mkdir -p /apps/pxe/www/tftp/pxelinux.cfg
-cat > /apps/pxe/www/tftp/pxelinux.cfg/default <<EOF
-DEFAULT vesamenu.c32
-TIMEOUT 600
-ONTIMEOUT focal-live-install-autoinstall
-PROMPT 0
 
-NOESCAPE 1
-
-LABEL focal-live-install
-        MENU DEFAULT
-        MENU label Install focal
-        KERNEL vmlinuz
-        INITRD initrd
-        APPEND root=/dev/ram0 ramdisk_size=1500000 ip=dhcp url=http://${MYIP}/tftp/ubuntu-20.04-live-server-amd64.iso
-
-LABEL focal-live-install-autoinstall
-        MENU DEFAULT
-        MENU label Install focal - autoinstall
-        KERNEL vmlinuz
-        INITRD initrd
-        APPEND root=/dev/ram0 ramdisk_size=1500000 ip=dhcp url=http://${MYIP}/tftp/ubuntu-20.04-live-server-amd64.iso autoinstall ds=nocloud-net;s=http://${MYIP}/tftp/cloud-init-bios/
-
-EOF
 
 mkdir -p /apps/pxe/www/tftp/cloud-init-bios/
 cat > /apps/pxe/www/tftp/cloud-init-bios/meta-data <<EOF
