@@ -10,12 +10,12 @@ LABEL focal-live-install
         MENU label Install focal
         KERNEL vmlinuz
         INITRD initrd
-        APPEND root=/dev/ram0 ramdisk_size=1500000 ip=dhcp url=http://{{ ansible_eth1.ipv4.address }}/tftp/ubuntu-20.04.1-live-server-amd64.iso
+        APPEND root=/dev/ram0 ramdisk_size=1500000 net.ifnames=0 biosdevname=0 ip=dhcp url=http://{{ ansible_eth1.ipv4.address }}/tftp/ubuntu-20.04.1-live-server-amd64.iso
 
 LABEL focal-live-install-autoinstall
         MENU DEFAULT
         MENU label Install focal - autoinstall
         KERNEL vmlinuz
         INITRD initrd
-        APPEND modprobe.blacklist=floppy root=/dev/ram0 ramdisk_size=900000 ip=dhcp url=http://{{ ansible_eth1.ipv4.address }}/tftp/ubuntu-20.04.1-live-server-amd64.iso autoinstall ds=nocloud-net;s=http://{{ ansible_eth1.ipv4.address }}/tftp/cloud-init-bios/
+        APPEND modprobe.blacklist=floppy root=/dev/ram0 ramdisk_size=900000 net.ifnames=0 biosdevname=0 ip=dhcp url=http://{{ ansible_eth1.ipv4.address }}/tftp/ubuntu-20.04.1-live-server-amd64.iso autoinstall ds=nocloud-net;s=http://{{ ansible_eth1.ipv4.address }}/tftp/cloud-init-bios/
 

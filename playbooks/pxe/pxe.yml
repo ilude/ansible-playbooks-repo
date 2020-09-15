@@ -14,22 +14,13 @@
       file:
         state: absent
         path: /apps/pxe
-      when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
+      #when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
 
-    - name: Create /apps/pxe/www/tftp
+    - name: Create /apps/pxe/www/tftp/pxelinux.cfg
       file:
-        path: /apps/pxe/www/tftp
+        path: /apps/pxe/www/tftp/pxelinux.cfg
         state: directory
         mode: 0755
-      become: false
-
-    - name: Download and unpack netboot.tar.gz
-      unarchive:
-        src: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/netboot.tar.gz
-        dest: /apps/pxe/www/tftp
-        mode: '0755'
-        remote_src: yes
-        creates: /apps/pxe/www/tftp/pxelinux.cfg/ 
       become: false
 
     - name: Copy pxelinux.cfg
@@ -39,35 +30,24 @@
         mode: 0755
       become: false
 
-      # cp /usr/lib/PXELINUX/pxelinux.0 /apps/pxe/www/tftp/pxelinux.0.bios
-      # cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp/
-
     - name: copy pxelinux.0
       copy:
         src: /usr/lib/PXELINUX/pxelinux.0
         dest: /apps/pxe/www/tftp/pxelinux.0
 
     - name: copy syslinux modules
-      shell: cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp/
+      shell: cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp
 
-    - name: Download ubuntu 20.04 server iso
-      get_url:
-        url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
-        dest: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
-        mode: '0440'
+    - name: Create /apps/pxe/www/tftp/cloud-init-bios
+      file:
+        path: /apps/pxe/www/tftp/cloud-init-bios
+        state: directory
+        mode: 0755
       become: false
-
-    - name: Extract kernel and ramdisk from a LiveCD
-      iso_extract:
-        image: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
-        dest:  /apps/pxe/www/tftp/
-        files:
-        - casper/vmlinuz
-        - casper/initrd
 
     - name: Create pxe cloud-init meta-data file
       lineinfile:
-        path: /apps/pxe/www/tftp/meta-data
+        path: /apps/pxe/www/tftp/cloud-init-bios/meta-data
         line: "instance-id: focal-autoinstall"
         mode: 0664
         create: yes
@@ -76,6 +56,30 @@
     - name: Create pxe cloud-init file
       template:
         src: cloud-init.j2
-        dest: /apps/pxe/www/tftp/user-data
+        dest: /apps/pxe/www/tftp/cloud-init-bios/user-data
         mode: 0664
       become: false
+
+    - name: Download ubuntu 20.04 server iso
+      get_url:
+        url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
+        dest: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
+        mode: '0440'
+      become: false
+
+    - name: Extract kernel and ramdisk image from a LiveCD
+      iso_extract:
+        image: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
+        dest:  /apps/pxe/www/tftp/
+        files:
+        - casper/vmlinuz
+        - casper/initrd
+
+    # - name: Download and unpack netboot.tar.gz
+    #   unarchive:
+    #     src: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/netboot.tar.gz
+    #     dest: /apps/pxe/www/tftp
+    #     mode: '0755'
+    #     remote_src: yes
+    #     creates: /apps/pxe/www/tftp/pxelinux.cfg/ 
+    #   become: false

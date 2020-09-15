@@ -9,7 +9,7 @@ autoinstall:
       uri: http://us.archive.ubuntu.com/ubuntu
     - arches: [default]
       uri: http://ports.ubuntu.com/ubuntu-ports
-  identity: {hostname: focal-autoinstall, password: {{ generated_pass }}, realname: mike, username: mike}
+  identity: {hostname: focal-autoinstall, password: '$6$rounds=4096$pxIXGJ7Vb1aOIw9b$pwUIbLJh4cvcO5hNGMw97xtlNh0Z3OgmlgqhOtNTGFEv9Xl6YMBMI4o6QIrC6//TfzUHg.iJy4Iqen20Z7RvZ0', realname: anvil, username: anvil}
   keyboard: {layout: us, toggle: null, variant: ''}
   locale: en_US
   network:
@@ -42,4 +42,19 @@ autoinstall:
     - {fstype: ext4, volume: lvm_partition-0, preserve: false, type: format, id: format-1}
     - {device: format-1, path: /, type: mount, id: mount-1}
     - {device: format-0, path: /boot, type: mount, id: mount-0}
-  
+  late-commands:
+    - echo 'anvil ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/anvil
+    - sed -ie 's/GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX="net.ifnames=0 ipv6.disable=1 biosdevname=0"/' /target/etc/default/grub
+    - curtin in-target --target /target update-grub2
+  # phone_home: if this dictionary is present, then the phone_home
+  # cloud-config module will post specified data back to the given
+  # url
+  # default: none
+  # phone_home:
+  #   url: http://my.foo.bar/$INSTANCE/
+  #   post: all
+  #   tries: 10
+  #
+  # phone_home:
+  #   url: http://my.example.com/$INSTANCE_ID/
+  #   post: [ pub_key_dsa, pub_key_rsa, pub_key_ecdsa, instance_id ]

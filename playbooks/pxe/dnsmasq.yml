@@ -3,6 +3,18 @@
   become_method: sudo  
 
   tasks:
+    - name: "Install dnsmasq/pxe packages and dependences"
+      apt:
+        pkg:
+          - dnsmasq
+          - ufw
+          - net-tools
+          - tftp
+          - pxelinux
+          - syslinux
+          - p7zip-full
+        state: present
+        
     - name: stop service systemd-resolved, if running
       systemd:
         name: systemd-resolved
@@ -29,18 +41,6 @@
         owner: root
         mode: 0755
 
-    - name: "Install dnsmasq/pxe packages and dependences"
-      apt:
-        pkg:
-          - dnsmasq
-          - ufw
-          - net-tools
-          - tftp
-          - pxelinux
-          - syslinux
-          - p7zip-full
-        state: present
-
     - set_fact:
         mask_cidr: "{{ ip | ipaddr('network/prefix') }}"
       vars:
@@ -54,18 +54,6 @@
         owner: root
         mode: 0755
 
-    - name: Get username for current user
-      command: whoami
-      changed_when: false
-      become: false
-      register: id
-
-    - name: Set a fact with the username.
-      set_fact:
-        current_user: "{{ id.stdout }}"  
-
-    
-       
     - name: Start dnsmasq
       systemd:
         name: dnsmasq
