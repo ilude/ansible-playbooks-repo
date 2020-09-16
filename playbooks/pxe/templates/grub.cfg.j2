@@ -1,0 +1,10 @@
+set menu_color_normal=white/black
+set menu_color_highlight=black/light-gray
+set timeout=5
+
+menuentry 'Ubuntu 20.04' {
+  echo "Loading Kernel..."
+  linux  /grub/vmlinuz ip=dhcp url=http://{{ ansible_eth1.ipv4.address }}/tftp/ubuntu-20.04.1-live-server-amd64.iso autoinstall ds=nocloud-net\;s=http://{{ ansible_eth1.ipv4.address }}/tftp/cloud-init-bios/ 
+  echo "Loading Ram Disk..."
+  initrd /grub/initrd
+}

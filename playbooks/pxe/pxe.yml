@@ -1,4 +1,6 @@
 - hosts: pxe
+  become: yes
+  become_method: sudo  
   tasks:
     - name: Generate random password for code_server 
       set_fact: 
@@ -14,7 +16,7 @@
       file:
         state: absent
         path: /apps/pxe
-      #when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
+      when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
 
     - name: Create /apps/pxe/www/tftp/bios/pxelinux.cfg
       file:
@@ -34,9 +36,11 @@
       copy:
         src: /usr/lib/PXELINUX/pxelinux.0
         dest: /apps/pxe/www/tftp/bios/pxelinux.0
+      become: false
 
     - name: copy syslinux modules
       shell: cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp/bios
+      become: false
 
     - name: Create /apps/pxe/www/tftp/cloud-init-bios
       file:
@@ -60,26 +64,83 @@
         mode: 0664
       become: false
 
+    # begin uefi booting setup with grub
+    - name: Create /apps/pxe/www/tftp/grub
+      file:
+        path: /apps/pxe/www/tftp/grub/fonts
+        state: directory
+        mode: 0755
+      become: false
+
+    - name: Copy pxelinux.cfg
+      template:
+        src: grub.cfg.j2
+        dest: /apps/pxe/www/tftp/grub/grub.cfg
+        mode: 0755
+      become: false
+
+    - name: Copy shim.efi to grub directory
+      shell: 
+        cmd: cp /usr/lib/shim/shimx64.efi.signed /apps/pxe/www/tftp/bootx64.efi
+        warn: false
+        creates: /apps/pxe/www/tftp/bootx64.efi
+
+    - name: Copy shim.efi to grub directory
+      shell: 
+        cmd: cp /usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed /apps/pxe/www/tftp/grubx64.efi
+        warn: false
+        creates: /apps/pxe/www/tftp/grubx64.efi
+
+    - name: Copy unicode.pf2 to grub/fonts directory
+      shell: 
+        cmd: cp /usr/share/grub/unicode.pf2 /apps/pxe/www/tftp/grub/fonts/unicode.pf2 
+        warn: false
+        creates: /apps/pxe/www/tftp/unicode.pf2
+
     - name: Download ubuntu 20.04 server iso
       get_url:
         url: https://releases.ubuntu.com/20.04/ubuntu-20.04.1-live-server-amd64.iso
         dest: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
-        mode: '0440'
+        mode: 0644
       become: false
 
-    - name: Extract kernel and ramdisk image from a LiveCD
-      iso_extract:
-        image: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
-        dest:  /apps/pxe/www/tftp/bios
-        files:
-        - casper/vmlinuz
-        - casper/initrd
+    - name: Create /tmp/ubuntu-20.04.1-live-server-amd64.iso/
+      file:
+        path: /tmp/ubuntu-20.04.1-live-server-amd64.iso/
+        state: directory
+        mode: 0755
+      become: false
 
-    # - name: Download and unpack netboot.tar.gz
-    #   unarchive:
-    #     src: http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/netboot.tar.gz
-    #     dest: /apps/pxe/www/tftp
-    #     mode: '0755'
-    #     remote_src: yes
-    #     creates: /apps/pxe/www/tftp/pxelinux.cfg/ 
-    #   become: false
+    - name: mount iso
+      command: 
+        cmd: mount /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso /mnt
+        creates: /mnt/boot 
+        warn: false
+      become: true
+
+    - name: Copy {{item}} to bios directory
+      copy:
+        src: /mnt/casper/{{ item }}
+        dest: /apps/pxe/www/tftp/bios/
+      with_items:
+        - vmlinuz
+        - initrd
+
+    - name: Copy {{item}} to grub directory
+      copy:
+        src: /mnt/casper/{{ item }}
+        dest: /apps/pxe/www/tftp/grub/
+      with_items:
+        - vmlinuz
+        - initrd
+
+    - name: Copy kernel modules to grub directory
+      shell: 
+        cmd: cp -r /mnt/boot/grub/x86_64-efi /apps/pxe/www/tftp/grub
+        warn: false
+
+    - name: unmount iso
+      command: 
+        cmd: umount /mnt
+        warn: false
+      become: true

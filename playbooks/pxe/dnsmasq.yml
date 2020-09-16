@@ -13,6 +13,8 @@
           - pxelinux
           - syslinux
           - p7zip-full
+          - grub-efi-amd64-signed
+          - shim-signed
         state: present
         
     - name: stop service systemd-resolved, if running
