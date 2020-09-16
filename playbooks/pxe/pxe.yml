@@ -16,9 +16,9 @@
         path: /apps/pxe
       #when: dir_to_delete.stat.exists and dir_to_delete.stat.isdir
 
-    - name: Create /apps/pxe/www/tftp/pxelinux.cfg
+    - name: Create /apps/pxe/www/tftp/bios/pxelinux.cfg
       file:
-        path: /apps/pxe/www/tftp/pxelinux.cfg
+        path: /apps/pxe/www/tftp/bios/pxelinux.cfg
         state: directory
         mode: 0755
       become: false
@@ -26,17 +26,17 @@
     - name: Copy pxelinux.cfg
       template:
         src: pxelinux.cfg.default.j2
-        dest: /apps/pxe/www/tftp/pxelinux.cfg/default
+        dest: /apps/pxe/www/tftp/bios/pxelinux.cfg/default
         mode: 0755
       become: false
 
     - name: copy pxelinux.0
       copy:
         src: /usr/lib/PXELINUX/pxelinux.0
-        dest: /apps/pxe/www/tftp/pxelinux.0
+        dest: /apps/pxe/www/tftp/bios/pxelinux.0
 
     - name: copy syslinux modules
-      shell: cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp
+      shell: cp /usr/lib/syslinux/modules/bios/*.c32 /apps/pxe/www/tftp/bios
 
     - name: Create /apps/pxe/www/tftp/cloud-init-bios
       file:
@@ -70,7 +70,7 @@
     - name: Extract kernel and ramdisk image from a LiveCD
       iso_extract:
         image: /apps/pxe/www/tftp/ubuntu-20.04.1-live-server-amd64.iso
-        dest:  /apps/pxe/www/tftp/
+        dest:  /apps/pxe/www/tftp/bios
         files:
         - casper/vmlinuz
         - casper/initrd
